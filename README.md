@@ -25,10 +25,10 @@ NVIDIA_API_KEY=your_key_here
 NVIDIA_MODEL=nvidia/nemotron-3-nano-30b-a3b
 NVIDIA_API_URL=https://integrate.api.nvidia.com/v1/chat/completions
 PORT=3000
-HOST_PORT=3000
+HOST_PORT=4000
 ```
 
-Only `NVIDIA_API_KEY` is required. The other values have defaults.
+Only `NVIDIA_API_KEY` is required. The other values have defaults. For Docker/Brev, `HOST_PORT` defaults to `4000` and maps to the app's internal container port `3000`.
 
 ## Brev Deployment
 
@@ -107,26 +107,26 @@ git clone https://github.com/YOUR_GITHUB_USERNAME/minima.git
 cd minima
 test -n "$NVIDIA_API_KEY" && echo "NVIDIA_API_KEY loaded"
 export NVIDIA_MODEL="nvidia/nemotron-3-nano-30b-a3b"
-export HOST_PORT=3000
+export HOST_PORT=4000
 chmod +x scripts/brev-start.sh
 ./scripts/brev-start.sh
 docker compose logs -f minima
 ```
 
-The app runs on port `3000` inside the Brev instance.
+The container listens on port `3000`; Brev exposes it on host port `4000`.
 
 ### 5. Test From Your Laptop
 
 In a second local terminal:
 
 ```bash
-brev port-forward minima-cloud --port 3000:3000
+brev port-forward minima-cloud --port 4000:4000
 ```
 
 Then open:
 
 ```text
-http://localhost:3000
+http://localhost:4000
 ```
 
 ### 6. Create The Public Hackathon URL
@@ -135,7 +135,7 @@ In the Brev web console:
 
 1. Open the `minima-cloud` instance.
 2. Go to the Access section.
-3. Under Using Tunnels, add port `3000`.
+3. Under Using Tunnels, add port `4000`.
 4. Copy the generated tunnel URL.
 5. Submit that URL plus the GitHub repo link.
 

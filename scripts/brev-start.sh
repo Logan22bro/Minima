@@ -7,7 +7,7 @@ if [ -z "${NVIDIA_API_KEY:-}" ]; then
 fi
 
 export NVIDIA_MODEL="${NVIDIA_MODEL:-nvidia/nemotron-3-nano-30b-a3b}"
-export HOST_PORT="${HOST_PORT:-3000}"
+export HOST_PORT="${HOST_PORT:-4000}"
 
 docker compose up --build -d
 docker compose ps

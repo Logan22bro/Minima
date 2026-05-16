@@ -174,34 +174,41 @@ async function callNemotronOptimizer(prompt, analysis, memory) {
   requireNvidiaKey();
 
   let priorRewrite = "";
+  let lastError = null;
   for (let attempt = 0; attempt < 2; attempt += 1) {
-    const response = await fetch(nvidiaUrl, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        authorization: `Bearer ${nvidiaKey}`,
-      },
-      body: JSON.stringify({
-        model: nvidiaModel,
-        messages: buildOptimizerMessages(prompt, analysis, memory, priorRewrite),
-        temperature: 0.2,
-        max_tokens: 1200,
-      }),
-    });
+    try {
+      const response = await fetch(nvidiaUrl, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Bearer ${nvidiaKey}`,
+        },
+        body: JSON.stringify({
+          model: nvidiaModel,
+          messages: buildOptimizerMessages(prompt, analysis, memory, priorRewrite),
+          temperature: 0.2,
+          max_tokens: 1200,
+        }),
+      });
 
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`Nemotron optimizer request failed: ${response.status} ${text}`);
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Nemotron optimizer request failed: ${response.status} ${text}`);
+      }
+
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content || data.output_text || "";
+      const rewrite = sanitizeOptimizedPrompt(content);
+      if (optimizedRewriteIsValid(rewrite, analysis)) return rewrite;
+
+      priorRewrite = rewrite;
+      lastError = new Error("Nemotron optimizer returned a rewrite that was still too broad.");
+    } catch (error) {
+      lastError = error;
     }
-
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || data.output_text || "";
-    const rewrite = sanitizeOptimizedPrompt(content);
-    if (optimizedRewriteIsValid(rewrite, analysis)) return rewrite;
-    priorRewrite = rewrite;
   }
 
-  throw new Error("Nemotron optimizer returned a rewrite that was still too broad.");
+  throw new Error(`Nemotron optimizer failed after retry: ${lastError.message}`);
 }
 
 async function optimizePrompt(prompt, analysis, memory) {

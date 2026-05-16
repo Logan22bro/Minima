@@ -6,7 +6,7 @@ Minima is a live Nemotron-powered AI agent that makes AI consumption visible bef
 
 ## Live Judge Flow
 
-1. Open `http://localhost:3000`.
+1. Open the Brev tunnel URL for port `4000` or `http://localhost:4000` if you are port-forwarding from Brev.
 2. Use the default prompt:
    ```text
    Explain all of machine learning to me in detail.
