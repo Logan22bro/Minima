@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Minima</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">Nemotron-powered AI sustainability agent</div>
+          <h1>Minima</h1>
+        </div>
+        <div class="status-pill" id="modelStatus">Nemotron required</div>
+      </header>
+
+      <section class="workspace">
+        <aside class="panel chat-panel">
+          <div class="panel-header">
+            <span>Prompt</span>
+          </div>
+
+          <textarea id="promptInput" spellcheck="true">Explain all of machine learning to me in detail.</textarea>
+
+          <div class="action-row">
+            <button class="primary-button" id="sendButton">Run Agent</button>
+          </div>
+
+          <div class="memory-card">
+            <div class="small-label">Persistent Memory</div>
+            <p id="memoryText">No session memory yet.</p>
+          </div>
+
+          <div class="agent-timeline" id="agentTimeline">
+            <div class="timeline-empty">Agent steps will appear here.</div>
+          </div>
+        </aside>
+
+        <section class="panel answer-panel">
+          <div class="panel-header">
+            <span>Answer</span>
+            <span class="tiny-tag" id="wasteTag">ready</span>
+          </div>
+          <div id="answerOutput" class="markdown-body">Run a prompt to start the live Nemotron agent workflow.</div>
+        </section>
+
+        <aside class="panel receipt-panel">
+          <div class="panel-header">
+            <span>AI Receipt</span>
+            <span class="tiny-tag">estimated range</span>
+          </div>
+
+          <div class="receipt-grid">
+            <div class="metric">
+              <span>Input Tokens</span>
+              <strong id="inputTokens">0</strong>
+            </div>
+            <div class="metric">
+              <span>Output Tokens</span>
+              <strong id="outputTokens">0</strong>
+            </div>
+            <div class="metric">
+              <span>Model Calls</span>
+              <strong id="modelCalls">0</strong>
+            </div>
+            <div class="metric">
+              <span>Tool Calls</span>
+              <strong id="toolCalls">0</strong>
+            </div>
+          </div>
+
+          <div class="impact-card">
+            <div class="small-label">Estimated Energy</div>
+            <div class="range-number" id="energyRange">0-0 Wh</div>
+            <div class="meter">
+              <div id="energyMeter"></div>
+            </div>
+          </div>
+
+          <div class="comparison-card">
+            <div class="panel-header inline">
+              <span id="comparisonTitle">Receipt Comparison</span>
+              <span class="tiny-tag" id="comparisonMode">waiting</span>
+            </div>
+            <div class="comparison-grid">
+              <div>
+                <span>Original</span>
+                <strong id="comparisonOriginalEnergy">0 Wh</strong>
+                <small id="comparisonOriginalTokens">0 tokens</small>
+              </div>
+              <div>
+                <span>Optimized</span>
+                <strong id="comparisonOptimizedEnergy">0 Wh</strong>
+                <small id="comparisonOptimizedTokens">0 tokens</small>
+              </div>
+            </div>
+            <div class="saved-strip">
+              <span>Energy saved by not running wasteful version</span>
+              <strong id="comparisonSavedEnergy">0 Wh</strong>
+            </div>
+          </div>
+
+          <div class="equivalent-list">
+            <div><span>LED bulb</span><strong id="bulbEquivalent">0 min</strong></div>
+            <div><span>Laptop battery</span><strong id="laptopEquivalent">0%</strong></div>
+            <div><span>Car equivalent</span><strong id="carEquivalent">0 mi</strong></div>
+            <div><span>Home electricity</span><strong id="homeEquivalent">0 min</strong></div>
+          </div>
+
+          <div class="scale-control">
+            <div class="panel-header inline">
+              <span>Scale</span>
+              <strong id="scaleLabel">Me</strong>
+            </div>
+            <input id="scaleSlider" type="range" min="0" max="3" value="0" step="1" />
+          </div>
+
+          <div class="methodology-card">
+            <div class="small-label">Methodology</div>
+            <p>
+              Educational range, not exact emissions. Estimated from prompt tokens, output tokens,
+              model calls, tool calls, and scale. Real impact depends on model size, GPU utilization,
+              data center efficiency, grid mix, cooling, batching, and caching.
+            </p>
+          </div>
+        </aside>
+      </section>
+
+      <section class="sandbox panel">
+        <div class="sandbox-left">
+          <div class="panel-header">
+            <span>AI Footprint Sandbox</span>
+            <span class="tiny-tag" id="failureBadge">stable</span>
+          </div>
+          <div class="data-center" id="dataCenter">
+            <div class="server rack-a"></div>
+            <div class="server rack-b"></div>
+            <div class="server rack-c"></div>
+            <div class="token-stream"></div>
+            <div class="water-tank">
+              <div id="waterFill"></div>
+            </div>
+            <div class="road">
+              <div class="car" id="car"></div>
+            </div>
+            <div class="houses" id="houses">
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="optimizer-card">
+          <div class="panel-header">
+            <span>Sustainable Rewrite</span>
+            <button class="secondary-button compact" id="applyOptimizedButton">Apply &amp; Run</button>
+          </div>
+          <p id="diagnosisText">Run the agent to diagnose prompt waste.</p>
+          <pre id="optimizedPrompt">Optimized prompt will appear here.</pre>
+          <div class="savings-card">
+            <span>Projected reduction</span>
+            <strong id="savingsText">0%</strong>
+          </div>
+
+          <div class="policy-card">
+            <div class="panel-header">
+              <span>Policy Audit</span>
+              <span class="tiny-tag">NemoClaw-ready</span>
+            </div>
+            <div id="policyLog">
+              <div class="policy-empty">Policy events will appear after the agent runs.</div>
+            </div>
+          </div>
+
+          <div class="tool-card">
+            <div class="panel-header">
+              <span>Tool Call Log</span>
+              <span class="tiny-tag">live tools</span>
+            </div>
+            <div id="toolCallLog">
+              <div class="policy-empty">Tool calls will appear after the agent runs.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
