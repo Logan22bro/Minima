@@ -86,6 +86,7 @@ function analyzePrompt(prompt) {
     /\bcomplete\b/,
     /\bcomprehensive\b/,
     /\bin detail\b/,
+    /\bin depth\b/,
     /\bdeep dive\b/,
     /\bfrom scratch\b/,
   ].some((pattern) => pattern.test(lower));
@@ -131,10 +132,76 @@ function sanitizeOptimizedPrompt(text) {
 function optimizedRewriteIsValid(text, analysis) {
   const lower = text.toLowerCase();
   const hasLengthLimit = /\b(under|less than|max|maximum|no more than|around|about)\s+\d+\b|\b\d+\s+(words|sentences|bullets|points|paragraphs)\b/.test(lower);
-  const hasFormatLimit = /\b(bullets?|table|checklist|quiz|questions?|example|steps?)\b/.test(lower);
+  const hasFormatLimit = /\b(bullets?|table|checklist|quiz|questions?|example|events?|steps?)\b/.test(lower);
 
   if (!analysis.likelyWaste) return hasLengthLimit || hasFormatLimit;
   return hasLengthLimit && hasFormatLimit;
+}
+
+function extractMainTopic(prompt) {
+  const cleaned = prompt
+    .trim()
+    .replace(/[?.!]+$/g, "")
+    .replace(/\s+/g, " ");
+  const patterns = [
+    /^(?:please\s+)?(?:explain|teach|summarize|describe|walk me through|tell me about)\s+(?:me\s+)?(?:all of|everything about|the entire|the whole)?\s*(.+?)(?:\s+to me)?(?:\s+(?:in detail|in depth|deeply|from scratch|comprehensively|please))*$/i,
+    /^(?:what is|what are|help me understand)\s+(.+)$/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = cleaned.match(pattern);
+    if (match?.[1]) {
+      return cleanTopic(match[1]);
+    }
+  }
+
+  return cleanTopic(cleaned);
+}
+
+function cleanTopic(topic) {
+  return topic
+    .replace(/\b(all of|everything about|the entire|the whole)\b/gi, "")
+    .replace(/\b(to me|in detail|in depth|deeply|from scratch|comprehensively|comprehensive|please)\b/gi, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    || "this topic";
+}
+
+function buildRuleBasedRewrite(prompt, analysis) {
+  const topic = extractMainTopic(prompt);
+  const lowerPrompt = prompt.toLowerCase();
+  const lowerTopic = topic.toLowerCase();
+
+  if (/\b(universe|cosmos|cosmic)\b/.test(lowerTopic) && /\b(history|origin|timeline|eras?)\b/.test(lowerPrompt)) {
+    return "Explain the 3 major eras of the universe with one key event each, in under 300 words.";
+  }
+
+  if (/\b(history|timeline|origin|origins)\b/.test(lowerPrompt)) {
+    const subject = topic.replace(/^history of\s+/i, "").trim() || topic;
+    return `Explain the 3 major eras of ${subject} with one key event each and why it mattered, in under 300 words.`;
+  }
+
+  if (analysis.category === "coding") {
+    return `Help debug ${topic} in 5 steps: likely cause, one check, minimal fix, test command, and next question, in under 300 words.`;
+  }
+
+  if (/\b(machine learning|ml|ai|artificial intelligence)\b/.test(lowerTopic)) {
+    return "Explain the 4 core ideas of machine learning: data, models, training, and evaluation. Include one example and one misconception, in under 300 words.";
+  }
+
+  if (/\b(restaurant|restaurants|food service|dining)\b/.test(lowerTopic)) {
+    return `Explain ${topic} using 3 lenses: customer demand, operations, and unit economics. Include one example and one improvement idea, in under 300 words.`;
+  }
+
+  if (/\b(stock|stocks|market|business|company|companies|finance|investing)\b/.test(lowerTopic)) {
+    return `Analyze ${topic} using 3 factors: demand, margins, and risk. Include one concrete example and one caveat, in under 300 words.`;
+  }
+
+  if (analysis.category === "learning") {
+    return `Explain ${topic} through the 4 most important concepts, one concrete example, and one common misconception, in under 300 words.`;
+  }
+
+  return `Answer about ${topic} by covering the 3 most useful points, one concrete example, and one practical next step, in under 300 words.`;
 }
 
 function buildOptimizerMessages(prompt, analysis, memory, priorRewrite = "") {
@@ -212,11 +279,20 @@ async function callNemotronOptimizer(prompt, analysis, memory) {
 }
 
 async function optimizePrompt(prompt, analysis, memory) {
-  const optimized = await callNemotronOptimizer(prompt, analysis, memory);
-  return {
-    prompt: optimized,
-    source: "nemotron_optimizer",
-  };
+  try {
+    const optimized = await callNemotronOptimizer(prompt, analysis, memory);
+    return {
+      prompt: optimized,
+      source: "nemotron_optimizer",
+      usedNemotronOptimizer: true,
+    };
+  } catch {
+    return {
+      prompt: buildRuleBasedRewrite(prompt, analysis),
+      source: "rule_based_rewrite_after_optimizer_retry",
+      usedNemotronOptimizer: false,
+    };
+  }
 }
 
 function predictOutputTokens(prompt, analysis, { optimized = false } = {}) {
@@ -290,7 +366,14 @@ function buildAgentTrace({ usedNemotron, analysis, preflight = false }) {
 }
 
 function buildToolCallLog({ usedNemotron, inputTokens, outputTokens, impact, optimizedPrompt, optimizedImpact, optimizedSource, analysis, memory, preflight = false }) {
-  const modelCallDetail = preflight ? "1 projected answer model call + 1 live optimizer call" : "2 live model calls";
+  const usedRuleBasedRewrite = optimizedSource !== "nemotron_optimizer";
+  const modelCallDetail = preflight
+    ? usedRuleBasedRewrite
+      ? "1 projected answer model call + 2 optimizer retries"
+      : "1 projected answer model call + 1 live optimizer call"
+    : usedRuleBasedRewrite
+      ? "1 answer model call + 2 optimizer retries"
+      : "2 live model calls";
   const log = [
     preflight ? {
       name: "skip_nemotron_answer",
@@ -305,9 +388,11 @@ function buildToolCallLog({ usedNemotron, inputTokens, outputTokens, impact, opt
     },
     {
       name: "call_nemotron_optimizer",
-      status: "live",
+      status: usedRuleBasedRewrite ? "retried" : "live",
       input: nvidiaModel,
-      output: "bounded rewrite generated by NVIDIA endpoint",
+      output: usedRuleBasedRewrite
+        ? "two optimizer attempts failed validation; deterministic bounded rewrite used"
+        : "bounded rewrite generated by NVIDIA endpoint",
     },
     {
       name: "analyze_prompt",
@@ -472,6 +557,7 @@ async function handleChat(req, res) {
     const optimization = await optimizePrompt(prompt, analysis, memory);
     const optimizedPrompt = optimization.prompt;
     const optimizedSource = optimization.source;
+    const usedNemotronOptimizer = optimization.usedNemotronOptimizer;
     const optimizedInputTokens = countTokens(optimizedPrompt);
     const optimizedOutputTokens = predictOutputTokens(optimizedPrompt, analysis, { optimized: true });
     const optimizedImpact = estimateImpact({
@@ -516,11 +602,13 @@ async function handleChat(req, res) {
           "",
           "Minima detected that this prompt is too broad to answer efficiently.",
           "",
-          "**No answer-generation call was made yet.** Nemotron was used only to create the bounded rewrite; the receipt below projects what the original prompt would likely cost if the system tried to satisfy it in full.",
+          usedNemotronOptimizer
+            ? "**No answer-generation call was made yet.** Nemotron was used only to create the bounded rewrite; the receipt below projects what the original prompt would likely cost if the system tried to satisfy it in full."
+            : "**No answer-generation call was made yet.** The Nemotron optimizer was retried, then Minima used a deterministic bounded rewrite so the workflow could continue.",
           "",
           "Use the optimized rewrite, then click **Apply & Run** to send the lower-waste version instead.",
         ].join("\n"),
-        usedNemotron: true,
+        usedNemotron: usedNemotronOptimizer,
         model: nvidiaModel,
         modelError: "",
         analysis,

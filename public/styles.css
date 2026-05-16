@@ -712,7 +712,8 @@ input[type="range"] {
 }
 
 .policy-item.flagged .policy-result,
-.tool-item.flagged .tool-result {
+.tool-item.flagged .tool-result,
+.tool-item.retried .tool-result {
   color: #ffe2a8;
 }
 

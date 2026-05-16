@@ -2,7 +2,7 @@
 
 Minima is a live Nemotron-powered AI sustainability agent. It analyzes a prompt, shows an environmental "AI receipt," visualizes real-world equivalents, and rewrites wasteful prompts into lower-impact workflows before answer generation.
 
-Minima fails closed without a live NVIDIA API key. It does not generate local answers or local rewrites.
+Minima fails closed without a live NVIDIA API key. It does not generate local answers. For prompt optimization, it tries Nemotron twice first; if both optimizer attempts fail validation, it uses a deterministic bounded rewrite so the pre-flight workflow never collapses into an API error.
 
 ## Local Run
 

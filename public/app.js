@@ -374,7 +374,9 @@ async function runPrompt(prompt, { approved = false } = {}) {
     if (!response.ok) throw new Error(data.error || "Agent failed.");
 
     setAnswerMarkdown(data.answer);
-    modelStatus.textContent = data.mode === "preflight" ? "Nemotron pre-flight" : data.model;
+    modelStatus.textContent = data.mode === "preflight"
+      ? data.usedNemotron ? "Nemotron pre-flight" : "rewrite recovered"
+      : data.model;
     renderTimeline(data.trace);
     renderReceipt(data.receipt);
     renderOptimization(data);

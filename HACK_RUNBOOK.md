@@ -2,7 +2,7 @@
 
 ## 30-Second Pitch
 
-Minima is a live Nemotron-powered AI agent that makes AI consumption visible before waste happens. Users ask normal AI prompts, the agent diagnoses prompt waste, calls Nemotron to create a bounded rewrite, projects the energy/token cost of the original versus optimized path, and only generates the final Nemotron answer after user approval.
+Minima is a live Nemotron-powered AI agent that makes AI consumption visible before waste happens. Users ask normal AI prompts, the agent diagnoses prompt waste, tries Nemotron twice to create a bounded rewrite, falls back to a deterministic useful rewrite if needed, projects the energy/token cost of the original versus optimized path, and only generates the final Nemotron answer after user approval.
 
 ## Live Judge Flow
 
@@ -16,7 +16,7 @@ Minima is a live Nemotron-powered AI agent that makes AI consumption visible bef
    ```text
    Analyze Prompt -> Skip Answer -> Count Tokens -> Estimate Footprint -> Diagnose Waste -> Optimize Prompt -> Save Memory
    ```
-5. Show that answer generation was blocked, while Nemotron generated the optimized rewrite.
+5. Show that answer generation was blocked, while Minima generated an optimized rewrite using Nemotron or its deterministic retry recovery path.
 6. Point at the AI receipt and footprint sandbox.
 7. Move the scale slider to `UCSC`.
 8. Point at the policy audit:
