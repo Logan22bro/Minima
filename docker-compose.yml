@@ -1,0 +1,19 @@
+services:
+  minima:
+    build:
+      context: .
+    image: minima:latest
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      NVIDIA_API_KEY: "${NVIDIA_API_KEY:?NVIDIA_API_KEY is required}"
+      NVIDIA_MODEL: "${NVIDIA_MODEL:-nvidia/nemotron-3-nano-30b-a3b}"
+      NVIDIA_API_URL: "${NVIDIA_API_URL:-https://integrate.api.nvidia.com/v1/chat/completions}"
+    volumes:
+      - minima-memory:/app/data
+
+volumes:
+  minima-memory:

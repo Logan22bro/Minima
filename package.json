@@ -1,0 +1,14 @@
+{
+  "name": "minima",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Live Nemotron-powered AI sustainability agent for the NVIDIA hackathon cloud track.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "check": "node --check server.mjs && node --check public/app.js"
+  }
+}
