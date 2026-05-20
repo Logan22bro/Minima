@@ -46,7 +46,7 @@ scripts/brev-start.sh
 From your local project folder:
 
 ```bash
-cd /Users/lisareynoso/Documents/Codex/2026-05-14/nvidia-x-asus-hackathon-tomorrow-suggest
+cd cd your-project-folder
 npm run check
 rg -n --hidden --no-ignore -S "[n]vapi-" . -g '!.git/**'
 git add .env.example .gitignore .dockerignore Procfile Dockerfile docker-compose.yml package.json package-lock.json README.md HACK_RUNBOOK.md public server.mjs scripts
