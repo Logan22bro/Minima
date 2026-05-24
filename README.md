@@ -115,7 +115,7 @@ docker compose logs -f minima
 
 The container listens on port `3000`; Brev exposes it on host port `4000`.
 
-### 5. Test From Your Laptop
+### 5. Test From Laptop
 
 In a second local terminal:
 
@@ -127,43 +127,6 @@ Then open:
 
 ```text
 http://localhost:4000
-```
-
-### 6. Create The Public Hackathon URL
-
-In the Brev web console:
-
-1. Open the `minima-cloud` instance.
-2. Go to the Access section.
-3. Under Using Tunnels, add port `4000`.
-4. Copy the generated tunnel URL.
-5. Submit that URL plus the GitHub repo link.
-
-## Docker Commands On Brev
-
-Restart:
-
-```bash
-docker compose restart minima
-```
-
-View logs:
-
-```bash
-docker compose logs -f minima
-```
-
-Stop:
-
-```bash
-docker compose down
-```
-
-Rebuild after pulling changes:
-
-```bash
-git pull
-docker compose up --build -d
 ```
 
 ## Stress Prompt
